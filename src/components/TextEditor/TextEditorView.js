@@ -4,7 +4,6 @@ import { Editor } from 'slate-react';
 import { bold, italic, code, underline } from 'react-icons-kit/feather/';
 import { ic_looks_one, ic_looks_two, ic_format_quote, ic_insert_photo, 
     ic_format_list_bulleted, ic_format_list_numbered } from 'react-icons-kit/md/';
-import MarkElement from './MarkElement';
 import AppConstants from '../../constants/AppConstants';
 
 export default class TextEditorView extends Component{
@@ -12,11 +11,10 @@ export default class TextEditorView extends Component{
         return (
             <Fragment>
                 <div className='format-toolbar'>  
-                    <MarkElement type={AppConstants.Elements.BOLD} icon = {bold} onClick={this.props.onMarkClick}></MarkElement>  
-                    <MarkElement type={AppConstants.Elements.ITALIC} icon = {italic} onClick={this.props.onMarkClick}></MarkElement>
-                    <MarkElement type={AppConstants.Elements.UNDERLINE} icon = {underline} onClick={this.props.onMarkClick}></MarkElement>
-                    <MarkElement type={AppConstants.Elements.CODE} icon = {code} onClick={this.props.onMarkClick}></MarkElement>   
-
+                    {this.props.renderMarkElement(AppConstants.Elements.BOLD,bold)} 
+                    {this.props.renderMarkElement(AppConstants.Elements.ITALIC,italic)}
+                    {this.props.renderMarkElement(AppConstants.Elements.UNDERLINE,underline)}
+                    {this.props.renderMarkElement(AppConstants.Elements.CODE,code)}
 
                     {this.props.renderBlockElement(AppConstants.Elements.QUOTE, ic_format_quote)}
                     {this.props.renderBlockElement(AppConstants.Elements.HEADING1, ic_looks_one)}                    
@@ -26,7 +24,7 @@ export default class TextEditorView extends Component{
                     {this.props.renderBlockElement(AppConstants.Elements.IMAGE, ic_insert_photo)}                    
                 </div>
 				<Editor
-					value={this.props.value}
+					value={this.props.state.value}
 					onChange={this.props.onChange}
 					onKeyDown={this.props.onKeyDown}
 					renderMark={this.props.renderMark}

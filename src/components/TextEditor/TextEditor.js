@@ -5,26 +5,17 @@ import Icon from 'react-icons-kit';
 import TextEditorView from './TextEditorView';
 import AppConstants from '../../constants/AppConstants';
 // import MarkHotkeys from 'slate-mark-hotkeys';
-import styled from 'react-emotion'
-
+import Image from './Image';
+import  './TextEditor.css';
 
 const DEFAULT_NODE = 'paragraph';
-const Image = styled('img')`
-  display: block;
-  max-width: 100%;
-  max-height: 20em;
-  box-shadow: ${props => (props.selected ? '0 0 0 2px blue;' : 'none')};
-  `
-  function insertImage(change, src, target) {
-    if (target) {
-      change.select(target)
-    }
-  
+
+function insertImage(change, src) {    
     change.insertBlock({
       type: 'image',
       data: { src },
     })
-  }
+}
 
 export default class TextEditor extends Component {
 	state = {
@@ -107,51 +98,40 @@ export default class TextEditor extends Component {
 			}
 		}
 	};	
-	
-	renderLinkIcon = (type, icon) => (
-		<button
-			onPointerDown={(e) => this.onLinkClick(e, type)}
-			className="tooltip-icon-button"
-		>
-			<Icon icon={icon} />
-		</button>
-	);
 
+    // rendering of mark element
+    hasMark = type => {
+        const { value } = this.state
+        return value.activeMarks.some(mark => mark.type == type)
+    }
 	onMarkClick = (e, type) => {
 		e.preventDefault();
 		const { value } = this.state;
 		const change = value.change().toggleMark(type);
 		this.onChange(change);
-	};	
-
+    };
+    renderMarkElement(type, icon){
+        let style = this.hasMark(type) ? 'button-bold': 'button-gray'; 
+        return(
+            <button
+            className = {style}
+            onPointerDown={(e) => this.onMarkClick(e, type)}            
+            >
+                <Icon icon={icon} />
+            </button>
+        )
+    }
+    // end of mark element	
+    
+    // rendering of block element
     hasBlock = type => {
         const { value } = this.state
         return value.blocks.some(node => node.type === type)
     }
-
-    renderBlockElement = (type, icon) => {
-        let isActive = this.hasBlock(type)
-    
-        if (['numbered-list', 'bulleted-list'].includes(type)) {
-          const { value } = this.state
-          const parent = value.document.getParent(value.blocks.first().key)
-          isActive = this.hasBlock('list-item') && parent && parent.type === type
-        }
-    
-        return (
-          <button
-            active={isActive}
-            onMouseDown={event => this.onClickBlock(event, type)}
-          >
-          <Icon icon={icon} />
-          </button>
-        )
-    }
-    
     onClickBlock = (event, type) => {
         event.preventDefault()
         if(type === AppConstants.Elements.IMAGE){
-            this.openFileDialog(this.HandleImage);
+            this.openFileDialog(this.handleImage);
             return;
         }
         const { value } = this.state
@@ -196,12 +176,39 @@ export default class TextEditor extends Component {
     
         this.onChange(change)
     }
+    renderBlockElement = (type, icon) => {
+        let isActive = this.hasBlock(type)
+    
+        if (['numbered-list', 'bulleted-list'].includes(type)) {
+          const { value } = this.state
+          const parent = value.document.getParent(value.blocks.first().key)
+          isActive = this.hasBlock('list-item') && parent && parent.type === type
+        }
 
-    HandleImage = e => {
+        let style = isActive ? 'button-bold': 'button-gray';
+    
+        return (
+        <button
+            className = {style}
+            onMouseDown={event => this.onClickBlock(event, type)}
+        >
+            <Icon icon={icon} />
+        </button>
+        )
+    }
+    // end of block element
+    
+    // image rendering
+    handleImage = e => {
         let file = e.path[0].files[0];
         var reader  = new FileReader();
         reader.addEventListener("load", function () {   
-            const change = this.state.value.change().call(insertImage, reader.result);    
+            const change = this.state.value.change().call(insertImage, reader.result); 
+            // const change = this.state.value.change();
+            // this.state.value.change().insertBlock({
+            //     type: 'image',
+            //     src: reader.result
+            // });
             this.onChange(change)
         }.bind(this), false);
         if (file) {
@@ -209,7 +216,6 @@ export default class TextEditor extends Component {
         }
         
     }
-
     openFileDialog (callback) {  
         var inputElement = document.createElement("input");
         inputElement.type = "file";
@@ -217,19 +223,19 @@ export default class TextEditor extends Component {
         inputElement.addEventListener("change", callback, false);
         inputElement.dispatchEvent(new MouseEvent("click")); 
     }
+    // end of image rendering
     
 
 	render() {
 		return (			
             <TextEditorView 
-                {...this.state}
+                state = {this.state}
                 onChange={this.onChange.bind(this)}
                 onKeyDown = {this.onKeyDown.bind(this)}
                 //plugins = {[new MarkHotkeys()]}
                 renderMark = {this.renderMark.bind(this)}
                 renderNode = {this.renderNode.bind(this)}
-                onMarkClick = {this.onMarkClick.bind(this)}
-                renderLinkIcon = {this.renderLinkIcon}
+                renderMarkElement = {this.renderMarkElement.bind(this)}
                 renderBlockElement = {this.renderBlockElement.bind(this)}
             />
 		);
