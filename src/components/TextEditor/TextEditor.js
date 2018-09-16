@@ -30,6 +30,23 @@ export default class TextEditor extends Component {
 	};
 
 	onKeyDown = (e, change) => {
+        
+        if(e.shiftKey && e.key === 'Tab'){   
+            let {value} = this.state;
+            let {document} = value;     
+            const isNumberList = value.blocks.some(block => {
+                return !!document.getClosest(block.key, parent => parent.type === AppConstants.Elements.NUMBERLIST)
+            }) 
+            const isBulletedList = value.blocks.some(block => {
+                return !!document.getClosest(block.key, parent => parent.type === AppConstants.Elements.BULLETLIST)
+            })   
+            if(isNumberList)
+                change.setBlocks('list-item').wrapBlock(AppConstants.Elements.NUMBERLIST);   
+            if(isBulletedList)
+                change.setBlocks('list-item').wrapBlock(AppConstants.Elements.BULLETLIST);
+
+        }
+
 		if (!e.ctrlKey) return;
 
         e.preventDefault();
