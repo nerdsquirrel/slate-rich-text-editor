@@ -6,7 +6,9 @@ import TextEditorView from './TextEditorView';
 import AppConstants from '../../constants/AppConstants';
 // import MarkHotkeys from 'slate-mark-hotkeys';
 import Image from './Image';
+import LocalStorageService from '../../services/LocalStorageService';
 import  './TextEditor.css';
+import { Value } from 'slate';
 
 const DEFAULT_NODE = 'paragraph';
 
@@ -23,6 +25,7 @@ export default class TextEditor extends Component {
     };    
 
 	onChange = ({ value }) => {
+        // console.log(value.toJSON().document.nodes);
 		this.setState({ value });
 	};
 
@@ -51,7 +54,12 @@ export default class TextEditor extends Component {
 			case 'q': {
 				change.toggleMark('quote');
 				return true;
-			}			
+            }	
+            case 's': {
+                LocalStorageService.set(AppConstants.LOCALSTORAGEKEY.CONTENT, JSON.stringify(this.state.value.toJSON()));
+                this.onChange(change);
+				return true;
+			}		
 			default: {
 				return;
 			}
@@ -59,11 +67,13 @@ export default class TextEditor extends Component {
 	};
 
 	renderNode = (props) => {        
-        const { attributes, children, node, isFocused } = props
+        const { attributes, children, node } = props
 		switch (node.type) {			
-            case 'image': {
-                const src = node.data.get('src')
-                return <Image src={src} selected={isFocused} {...attributes} />        }
+            case 'image': 
+            {
+                const src = node.data.get('src');
+                return <Image {...attributes} src={src} />
+            }
             case AppConstants.Elements.HEADING1:
                 return <h1 {...attributes}>{children}</h1>
             case AppConstants.Elements.HEADING2:
@@ -92,7 +102,7 @@ export default class TextEditor extends Component {
 			case AppConstants.Elements.CODE:
                 return <code {...props.attributes}>{props.children}</code>;            
 			case AppConstants.Elements.UNDERLINE:
-				return <u {...props.attributes}>{props.children}</u>;
+                return <u {...props.attributes}>{props.children}</u>;
 			default: {
 				return;
 			}
@@ -102,11 +112,21 @@ export default class TextEditor extends Component {
     // rendering of mark element
     hasMark = type => {
         const { value } = this.state
+        if(type === AppConstants.Elements.SAVE || type === AppConstants.Elements.CANCEL){
+            return JSON.stringify(LocalStorageService.get(AppConstants.LOCALSTORAGEKEY.CONTENT)) !== JSON.stringify(value.toJSON());
+        }        
         return value.activeMarks.some(mark => mark.type == type)
     }
 	onMarkClick = (e, type) => {
 		e.preventDefault();
-		const { value } = this.state;
+        const { value } = this.state;
+        if(type === AppConstants.Elements.SAVE){
+            LocalStorageService.set(AppConstants.LOCALSTORAGEKEY.CONTENT, JSON.stringify(value.toJSON()));            
+        }
+        if(type === AppConstants.Elements.CANCEL){
+            this.setState({value: Value.fromJSON(LocalStorageService.get(AppConstants.LOCALSTORAGEKEY.CONTENT))});
+            return;         
+        }
 		const change = value.change().toggleMark(type);
 		this.onChange(change);
     };
@@ -121,12 +141,12 @@ export default class TextEditor extends Component {
             </button>
         )
     }
-    // end of mark element	
+    // end	
     
     // rendering of block element
     hasBlock = type => {
-        const { value } = this.state
-        return value.blocks.some(node => node.type === type)
+        const { value } = this.state;        
+        return value.blocks.some(node => node.type === type)      
     }
     onClickBlock = (event, type) => {
         event.preventDefault()
@@ -196,19 +216,14 @@ export default class TextEditor extends Component {
         </button>
         )
     }
-    // end of block element
+    // end
     
     // image rendering
     handleImage = e => {
         let file = e.path[0].files[0];
         var reader  = new FileReader();
         reader.addEventListener("load", function () {   
-            const change = this.state.value.change().call(insertImage, reader.result); 
-            // const change = this.state.value.change();
-            // this.state.value.change().insertBlock({
-            //     type: 'image',
-            //     src: reader.result
-            // });
+            const change = this.state.value.change().call(insertImage, reader.result);             
             this.onChange(change)
         }.bind(this), false);
         if (file) {
@@ -223,7 +238,7 @@ export default class TextEditor extends Component {
         inputElement.addEventListener("change", callback, false);
         inputElement.dispatchEvent(new MouseEvent("click")); 
     }
-    // end of image rendering
+    // end
     
 
 	render() {

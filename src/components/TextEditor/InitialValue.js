@@ -1,6 +1,9 @@
 import { Value } from 'slate';
+import LocalStorageService from '../../services/LocalStorageService';
+import AppConstant from '../../constants/AppConstants';
 
-const initialValue = Value.fromJSON({
+const existingValue = LocalStorageService.get(AppConstant.LOCALSTORAGEKEY.CONTENT);
+const initialValue = Value.fromJSON( existingValue || {
 	document: {
 		nodes: [
 			{
@@ -11,7 +14,7 @@ const initialValue = Value.fromJSON({
 						object: 'text',
 						leaves: [
 							{
-								text: 'My first paragraph!',
+								text: 'A line of text in a paragraph.',
 							},
 						],
 					},

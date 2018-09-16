@@ -3,7 +3,7 @@ import { Editor } from 'slate-react';
 
 import { bold, italic, code, underline } from 'react-icons-kit/feather/';
 import { ic_looks_one, ic_looks_two, ic_format_quote, ic_insert_photo, 
-    ic_format_list_bulleted, ic_format_list_numbered } from 'react-icons-kit/md/';
+    ic_format_list_bulleted, ic_format_list_numbered, ic_save, ic_cancel } from 'react-icons-kit/md/';
 import AppConstants from '../../constants/AppConstants';
 
 export default class TextEditorView extends Component{
@@ -21,7 +21,11 @@ export default class TextEditorView extends Component{
                     {this.props.renderBlockElement(AppConstants.Elements.HEADING2, ic_looks_two)} 
 					{this.props.renderBlockElement(AppConstants.Elements.BULLETLIST, ic_format_list_bulleted)}
 					{this.props.renderBlockElement(AppConstants.Elements.NUMBERLIST, ic_format_list_numbered)}					
-                    {this.props.renderBlockElement(AppConstants.Elements.IMAGE, ic_insert_photo)}                    
+                    {this.props.renderBlockElement(AppConstants.Elements.IMAGE, ic_insert_photo)}       
+
+                    
+                    {this.props.renderMarkElement(AppConstants.Elements.SAVE,ic_save)}
+                    {this.props.renderMarkElement(AppConstants.Elements.CANCEL,ic_cancel)}             
                 </div>
 				<Editor
 					value={this.props.state.value}

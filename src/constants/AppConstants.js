@@ -10,7 +10,12 @@ const AppConstants = {
         NUMBERLIST: 'bulleted-list',
         BULLETLIST: 'numbered-list',
         IMAGE: 'image',
-        LINK: 'link'
+        LINK: 'link',
+        SAVE: 'save',
+        CANCEL: 'cancel',
+    },
+    LOCALSTORAGEKEY:{
+        CONTENT: 'content'
     }
     
 };
